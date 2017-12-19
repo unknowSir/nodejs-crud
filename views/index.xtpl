@@ -1,0 +1,12 @@
+<!-- 引用头部 -->
+{{extend ("./layout")}}
+
+{{#block ("head")}}
+<!--index head block-->
+<link type="text/css" href="css/style.css"  rel="stylesheet"  />
+{{/block}}
+
+{{#block ("body")}}
+<!--index body block-->
+<h2>{{title}}</h2>
+{{/block}}

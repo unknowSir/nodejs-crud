@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    table img {
+      width: 100%;
+      max-width: 100px;
+    }
+  </style>
+  <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
+
+</head>
+
+<body>
+  <div class="container">
+    <div>
+      <button data-toggle="modal" data-target="#myModal" class="btn btn-default" id="add">添加</button>
+      <button data-toggle="modal" data-target="#myModal" class="btn btn-default" id="edit">编辑</button>
+      <button data-toggle="modal" data-target="#myModal" class="btn btn-default" id="delete">删除</button>
+      <button class="btn btn-default" id="reflash">刷新</button>
+    </div>
+    <div>
+      <table class="table table-bordered"></table>
+    </div>
+    <div>
+      <nav aria-label="Page navigation">
+        <ul class="pagination"></ul>
+      </nav>
+    </div>
+  </div>
+  <!-- 模态框 -->
+  <div id="myModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">操作数据</h4>
+        </div>
+        <div class="modal-body">
+          <form id="ff" class="form-horizontal" enctype="multipart/form-data">
+            <div class="form-group">
+              <label for="title" class="col-sm-2 control-label">请输入标题</label>
+              <div class="col-sm-10">
+                <input required type="text" class="form-control" name="title" id="title" placeholder="Email">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="fileInp" class="col-sm-2 control-label">上传文件</label>
+              <div class="col-sm-10">
+                <input required type="file" class="form-control" name="src" id="fileInp" placeholder="Email">
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-10 col-sm-offset-2">
+                <input type="image" width="100" src="images/default.png" name="srcImage" id="src">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="type" class="col-sm-2 control-label">类型</label>
+              <div class="col-sm-10">
+                <select name="type" class="form-control" id="type">
+                  <option value="-1">默认</option>
+                  <option value="0">轮播图</option>
+                  <option value="1">优秀标兵</option>
+                  <option value="2">动态</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputEmail3" class="col-sm-2 control-label">描述</label>
+              <div class="col-sm-10">
+                <textarea placeholder="请输入详细描述" required name="des" id="des" class="form-control"></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="canBtn" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" form="ff" id="subBtn" class="btn btn-primary">提交</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/html" id="tblTpl">
+    {{%
+    <tr>
+      <td>序号</td>
+      <td>标题</td>
+      <td>路径</td>
+      <td>描述</td>
+      <td>创建时间</td>
+      <td>类型</td>
+      <td>是否已经删除</td>
+    </tr>
+    {{each data as value i}}
+    <tr>
+      <td>{{(page-1)*rows+ i+1 }}</td>
+      <td>{{ value.title }}</td>
+      <td><img src="{{value.src}}" alt=""></td>
+        <td>{{  value.des }}</td>
+        <td>{{  value.createTime }}</td>
+        <td>{{  value.type }}</td>
+        <td>{{  value.isDelete }}</td>
+        </tr>
+      {{/each}}
+      %}}
+  </script>
+  <script src="lib/jquery.min.js"></script>
+  <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+  <script src="lib/bootstrap-paginator.min.js"></script>
+  <script src="lib/template.js"></script>
+  <script>
+    $(function () {
+      var QueryPage = {
+        page: 1,
+        rows: 5
+      };
+      var TotalPages = 1;
+      getList(setPage);
+      function getList(callback) {
+        $.get("users/getList", QueryPage, function (result) {
+          TotalPages = Math.ceil(result.total / QueryPage.rows);
+          var html = template("tblTpl", result);
+          $("table").html(html);
+          callback && callback();
+        })
+      }
+
+      function setPage(params) {
+        var options = {
+          bootstrapMajorVersion: 3,
+          currentPage: QueryPage.page,//当前页面  
+          numberOfPages: QueryPage.rows,//一页显示几个按钮（在ul里面生成5个li）  
+          totalPages: TotalPages,//总页数  
+          onPageClicked: function (event, originalEvent, type, page) {
+            QueryPage.page = page;
+            getList();
+          }
+        }
+        $(".pagination").bootstrapPaginator(options);
+      }
+
+      $("#fileInp").change(function (e) {
+        // console.log(e);
+        var file = e.target.files[0];
+        var fr = new FileReader();
+        fr.readAsDataURL(file);
+        fr.onload = function () {
+          $("#src").attr("src", fr.result);
+        }
+      })
+      $("#ff").submit(function (e) {
+        e.preventDefault();
+        var formData = new FormData($("#ff")[0]);
+        formData.forEach(function (value, key) {
+          console.log(value, key);
+        });
+        $.ajax({
+          url: "/users/uploads",
+          type: "POST",
+          data: formData,
+          cache: false,
+          // 不用jq处理
+          processData: false,
+          contentType: false,
+          success: function (result) {
+            // console.log(e);
+            // 关闭对话框 刷新数据列表
+            $("#myModal").modal("hide");
+            QueryPage = {
+              page: 1,
+              rows: 5
+            };
+            getList(setPage);
+          },
+          error: function (e) {
+            // console.log(e);
+          }
+        });
+      })
+    })
+  </script>
+
+</body>
+
+
+</html>

@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+<head>
+<meta name="charset" content="utf-8" />
+<title>{{title}}</title>
+{{{block ("head")}}}
+</head>
+<body>
+{{{include ("./header")}}}
+{{{block ("body")}}}
+{{{include ("./footer")}}}
+</body>
+</html>
