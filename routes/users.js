@@ -51,17 +51,27 @@ router.get("/del", function (req, res, next) {
 /* post 添加 */
 router.post("/add", multipartMiddleware, function (req, res, next) {
   var file = req.files.src;
-  saveFile(file, '', function (imgPath) {
-    var formBody = req.body;
-    formBody.src = imgPath;
-    formBody.createTime = Date.now();
-    formBody.isDelete = 0;
-    req.models.media.create(formBody, function (err) {
-      if (err) throw err;
-      // 正常执行
-      res.send({ status: 0, msg: "新增成功" });
-    })
-  });
+  var formBody = req.body;
+  formBody.src = formBody.src;
+  formBody.createTime = Date.now();
+  formBody.isDelete = 0;
+  req.models.media.create(formBody, function (err) {
+    if (err) throw err;
+    // 正常执行
+    res.send({ status: 0, msg: "新增成功" });
+  })
+
+  // saveFile(file, '', function (imgPath) {
+  //   var formBody = req.body;
+  //   formBody.src = imgPath;
+  //   formBody.createTime = Date.now();
+  //   formBody.isDelete = 0;
+  //   req.models.media.create(formBody, function (err) {
+  //     if (err) throw err;
+  //     // 正常执行
+  //     res.send({ status: 0, msg: "新增成功" });
+  //   })
+  // });
 })
 
 // 编辑
@@ -69,31 +79,46 @@ router.post("/edit", multipartMiddleware, function (req, res, next) {
   /* 
   1 有修改了图片文件的 重新保存和提交
   2 没有修改图片的 只修改字段即可
+
+  3 改用七牛云 直接存储字段即可
    */
   var formBody = req.body;
-  // 获取旧的数据
   req.models.media.get(formBody.id, function (err, oldData) {
     oldData.title = formBody.title;
     oldData.des = formBody.des;
     oldData.type = formBody.type;
-    //   判断有没有修改图片
-    if (req.files.src.name) {
-      var file = req.files.src;
-      saveFile(file, '', function (imgPath) {
-        oldData.src = imgPath;
-        // 保存数据 同步保存数据
-        oldData.save(function (err) {
-          if (err) throw err;
-          res.send({ status: 0, msg: "编F辑成功" });
-        });
-      });
-    } else {
-      oldData.save(function (err) {
-        if (err) throw err;
-        res.send({ status: 0, msg: "编辑成功" });
-      });
-    }
+    oldData.src = formBody.src;
+    // 保存数据 同步保存数据
+    oldData.save(function (err) {
+      if (err) throw err;
+      res.send({ status: 0, msg: "编F辑成功" });
+    });
   });
+
+
+  // 获取旧的数据
+  // req.models.media.get(formBody.id, function (err, oldData) {
+  //   oldData.title = formBody.title;
+  //   oldData.des = formBody.des;
+  //   oldData.type = formBody.type;
+  //   //   判断有没有修改图片
+  //   if (req.files.src.name) {
+  //     var file = req.files.src;
+  //     saveFile(file, '', function (imgPath) {
+  //       oldData.src = imgPath;
+  //       // 保存数据 同步保存数据
+  //       oldData.save(function (err) {
+  //         if (err) throw err;
+  //         res.send({ status: 0, msg: "编F辑成功" });
+  //       });
+  //     });
+  //   } else {
+  //     oldData.save(function (err) {
+  //       if (err) throw err;
+  //       res.send({ status: 0, msg: "编辑成功" });
+  //     });
+  //   }
+  // });
 })
 /**
  * 
@@ -107,7 +132,7 @@ function saveFile(file, path, callback) {
       console.log(err);
     } else {
       // 存储文件
-      var imgPath = "uploads/" + path +Date.now()+ file.originalFilename;
+      var imgPath = "uploads/" + path + Date.now() + file.originalFilename;
       fs.writeFile("public/" + imgPath, data, function (err1) {
         if (err1) {
           console.log(err1);

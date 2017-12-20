@@ -11,12 +11,47 @@
       width: 100%;
       max-width: 100px;
     }
+
+    .mask {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      opacity: .5;
+      background-color: #000;
+      z-index: 100000;
+    }
+
+    .mask::after {
+      display: block;
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border: 1px solid #fff;
+      background-color: blue;
+      border-radius: 50%;
+      left: 50%;
+      top: 50%;
+      margin-left: -50px;
+      margin-top: -50px;
+      transform-origin: 45px 45px;
+      animation: ani_loading .5s infinite linear ;
+    }
+
+    @keyframes ani_loading {
+      0% {
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
   </style>
   <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
 
 </head>
 
 <body>
+  <div class="mask"></div>
   <div class="container">
     <div>
       <button class="btn btn-default" id="add">添加</button>
@@ -59,8 +94,8 @@
             <div class="form-group">
               <label for="fileInp" class="col-sm-2 control-label">上传文件</label>
               <div class="col-sm-10 " id="upParent">
-                <input required type="file" class="form-control" name="src" id="fileInp" placeholder="Email">
-                <button type="button" id="uploadFile">上传</button>
+                <input required type="file" class="form-control" id="fileInp" placeholder="Email">
+                <input type="hidden" name="src" id="hiddenSrc">
               </div>
             </div>
             <div class="form-group">
@@ -188,7 +223,7 @@
         $(".pagination").bootstrapPaginator(options);
       }
 
-     
+
 
       // 搜索
       $(".searchBtn").click(function (params) {
@@ -205,24 +240,33 @@
         fr.readAsDataURL(file);
         fr.onload = function () {
           $("#src").attr("src", fr.result);
-
-          // 构造formdata
-          var f=new FormData();
-          f.append("key",Date.now()+file.name);
-          f.append("token","vktqZ89-4TFszXSyX3NjQDkdT8q_X-7ORoSIaq1A:91N8ffHZRJczDWHcx4oWqgRqfpQ=:eyJzY29wZSI6ImxpdGNzbyIsImRlYWRsaW5lIjoxNTEzNzY0OTQxfQ==");
-          f.append("file",file);
-          $.ajax({
-            url: "http://upload.qiniup.com/",
-            type: "POST",
-            data: f,
-            cache: false,
-            // 不用jq处理
-            processData: false,
-            contentType: false,
-            success:function(r){
-              console.log(r);
-            }
+          // 获取最新的token
+          $.get("/qiniu/token", function (token) {
+            // 构造formdata
+            var f = new FormData();
+            f.append("key", Date.now() + file.name);
+            f.append("token", token.uptoken);
+            f.append("file", file);
+            $.ajax({
+              url: "http://upload.qiniup.com/",
+              type: "POST",
+              data: f,
+              cache: false,
+              // 不用jq处理
+              processData: false,
+              contentType: false,
+              success: function (r) {
+                // console.log(r);
+                // 外链名字
+                var namepace = "http://p1935eslc.bkt.clouddn.com/";
+                // 图片的完整名字
+                var imgPath = namepace + r.key;
+                // 构造参数,添加到后台
+                $("input[name='src']").val(imgPath);
+              }
+            });
           });
+
         }
       })
 
@@ -251,7 +295,7 @@
         $("input[name='srcImage']").attr("src", obj.src);
 
         // 3 
-        $("input[name='src']").removeAttr("required");
+        $("input[type='src']").removeAttr("required");
       })
 
       // 新增
@@ -265,18 +309,19 @@
         ManagerType = 0;
         $("#myModal").modal("show");
         $("input[name='src']").attr("required", "");
+        $("#ff")[0].reset();
+        // 清除图片路径的隐藏于
+        $("input[name='src']").val("");
+        // 清除图片按钮
+        $("input[type='image']").attr("src","");
+        $("input[type='image']").val("");
       })
 
       // 提交
       $("#ff").submit(function (e) {
         e.preventDefault();
         var formData = new FormData($("#ff")[0]);
-        // formData.forEach(function (value, key) {
-        //   console.log(value, key);
-        // });
-
-
-        return;
+        // formData.append("src", $("input[name='src']").val());
         // 判断操作类型 0 为新增  1 为编辑 2 为删除
         if (ManagerType == 0) {
           $.ajax({
@@ -350,6 +395,14 @@
           }
         })
       })
+    })
+
+    $(window).ajaxStart(function(){
+      $(".mask").show();
+    })
+
+    $(window).ajaxStop(function(){
+      $(".mask").hide();
     })
   </script>
 </body>
