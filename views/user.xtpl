@@ -58,8 +58,9 @@
             </div>
             <div class="form-group">
               <label for="fileInp" class="col-sm-2 control-label">上传文件</label>
-              <div class="col-sm-10">
+              <div class="col-sm-10 " id="upParent">
                 <input required type="file" class="form-control" name="src" id="fileInp" placeholder="Email">
+                <button type="button" id="uploadFile">上传</button>
               </div>
             </div>
             <div class="form-group">
@@ -147,6 +148,7 @@
   <script src="lib/bootstrap-paginator.min.js"></script>
   <script src="lib/template.js"></script>
   <script src="js/common.js"></script>
+
   <script>
     $(function () {
       var QueryPage = {
@@ -160,6 +162,7 @@
       var TotalPages = 1;
       // 要删除数据的id
       var DelID = -1;
+      var Uploader;
       getList(setPage);
       function getList(callback) {
         QueryPage.title = $.trim($(".searchInp").val());
@@ -185,9 +188,11 @@
         $(".pagination").bootstrapPaginator(options);
       }
 
+     
+
       // 搜索
       $(".searchBtn").click(function (params) {
-        QueryPage.page=1;
+        QueryPage.page = 1;
         getList(setPage);
         $(".pagination").bootstrapPaginator("showFirst");
       })
@@ -195,10 +200,29 @@
       $("#fileInp").change(function (e) {
         // console.log(e);
         var file = e.target.files[0];
+        console.log(file);
         var fr = new FileReader();
         fr.readAsDataURL(file);
         fr.onload = function () {
           $("#src").attr("src", fr.result);
+
+          // 构造formdata
+          var f=new FormData();
+          f.append("key",Date.now()+file.name);
+          f.append("token","vktqZ89-4TFszXSyX3NjQDkdT8q_X-7ORoSIaq1A:91N8ffHZRJczDWHcx4oWqgRqfpQ=:eyJzY29wZSI6ImxpdGNzbyIsImRlYWRsaW5lIjoxNTEzNzY0OTQxfQ==");
+          f.append("file",file);
+          $.ajax({
+            url: "http://upload.qiniup.com/",
+            type: "POST",
+            data: f,
+            cache: false,
+            // 不用jq处理
+            processData: false,
+            contentType: false,
+            success:function(r){
+              console.log(r);
+            }
+          });
         }
       })
 
@@ -247,9 +271,12 @@
       $("#ff").submit(function (e) {
         e.preventDefault();
         var formData = new FormData($("#ff")[0]);
-        formData.forEach(function (value, key) {
-          console.log(value, key);
-        });
+        // formData.forEach(function (value, key) {
+        //   console.log(value, key);
+        // });
+
+
+        return;
         // 判断操作类型 0 为新增  1 为编辑 2 为删除
         if (ManagerType == 0) {
           $.ajax({
@@ -318,7 +345,7 @@
           $("#deleteModal").modal("hide");
           if (result.status == 0) {
             // 成功
-            QueryPage.page=1;
+            QueryPage.page = 1;
             getList(setPage);
           }
         })

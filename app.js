@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 var orm = require('orm');
 var index = require('./routes/index');
 var users = require('./routes/users');
+var qiniu = require('./routes/qiniu');
 
 var app = express();
 // 设置静态文件目录
@@ -48,6 +49,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 用来指定路由处理的
 app.use('/', index);
 app.use('/users', users);
+// 七牛路由
+app.use('/qiniu', qiniu);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

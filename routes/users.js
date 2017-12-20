@@ -107,7 +107,7 @@ function saveFile(file, path, callback) {
       console.log(err);
     } else {
       // 存储文件
-      var imgPath = "uploads/" + path + file.originalFilename;
+      var imgPath = "uploads/" + path +Date.now()+ file.originalFilename;
       fs.writeFile("public/" + imgPath, data, function (err1) {
         if (err1) {
           console.log(err1);
