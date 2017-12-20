@@ -3,13 +3,7 @@ var router = express.Router();
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
 var fs = require('fs');
-/* GET users listing. */
 router.get('/', function (req, res, next) {
-  // req.models.media.all({ isDelete: "0" }, function (error, media) {
-  //   // res.send(media);
-  //   res.render('user', { rows: media });
-  // });
-  // res.render('user', {  });
   res.render('user', { title: '我来拉' });
 });
 
@@ -36,12 +30,6 @@ router.get("/getList", function (req, res, next) {
     });
   })
 });
-
-
-/* GET users listing. */
-// router.get('/', function (req, res, next) {
-//  res.send("请使用post提交");
-// });
 
 /* post 提交 */
 router.post("/uploads", multipartMiddleware, function (req, res, next) {
