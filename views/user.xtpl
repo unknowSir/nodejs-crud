@@ -94,6 +94,30 @@
       </div>
     </div>
   </div>
+
+  <!-- 删除模态框 -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">警告</h4>
+        </div>
+        <div class="modal-body">
+          你确定要删除吗
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-danger delSubBtn ">删除</button>
+        </div>
+      </div>
+      <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+  </div>
+  <!-- /.modal -->
   <script type="text/html" id="tblTpl">
     {{%
     <tr>
@@ -123,7 +147,6 @@
   <script src="lib/bootstrap-paginator.min.js"></script>
   <script src="lib/template.js"></script>
   <script src="js/common.js"></script>
-
   <script>
     $(function () {
       var QueryPage = {
@@ -135,11 +158,14 @@
       // 0 新增 1 编辑 2 删除 默认为0 新增
       var ManagerType = 0;
       var TotalPages = 1;
+      // 要删除数据的id
+      var DelID = -1;
       getList(setPage);
       function getList(callback) {
         QueryPage.title = $.trim($(".searchInp").val());
         $.get("users/getList", QueryPage, function (result) {
           TotalPages = Math.ceil(result.total / QueryPage.rows);
+          console.log(TotalPages);
           var html = template("tblTpl", result);
           $("table").html(html);
           callback && callback();
@@ -161,6 +187,7 @@
 
       // 搜索
       $(".searchBtn").click(function (params) {
+        QueryPage.page=1;
         getList(setPage);
         $(".pagination").bootstrapPaginator("showFirst");
       })
@@ -273,6 +300,29 @@
           })
         }
       });
+
+      // 删除
+      $("table").on("click", ".dataDelBtn", function (e) {
+        var id = $(e.target).parents("tr").data("value").id;
+        DelID = id;
+        $("#deleteModal").modal("show");
+      });
+      // 提交删除
+      $(".delSubBtn").click(function (e) {
+        /* 
+        1 发送删除请求
+        2 关闭对话框
+        3 刷新数据
+         */
+        $.get("users/del?id=" + DelID, function (result) {
+          $("#deleteModal").modal("hide");
+          if (result.status == 0) {
+            // 成功
+            QueryPage.page=1;
+            getList(setPage);
+          }
+        })
+      })
     })
   </script>
 </body>

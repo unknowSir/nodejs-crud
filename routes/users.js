@@ -35,6 +35,19 @@ router.get("/getList", function (req, res, next) {
   })
 });
 
+// 删除
+router.get("/del", function (req, res, next) {
+  var id = req.query.id;
+  req.models.media.get(id, function (err, oldData) {
+    if (err) throw err;
+    oldData.isDelete = 1;
+    oldData.save(function (err1) {
+      if (err1) throw err1;
+      res.send({ status: 0, msg: "删除成功" });
+    })
+  })
+})
+
 /* post 添加 */
 router.post("/add", multipartMiddleware, function (req, res, next) {
   var file = req.files.src;
