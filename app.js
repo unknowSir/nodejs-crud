@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 var orm = require('orm');
 var index = require('./routes/index');
 var users = require('./routes/users');
+// 七牛上传模块 用来生成上传凭证
 var qiniu = require('./routes/qiniu');
 
 var app = express();
@@ -15,6 +16,7 @@ var app = express();
 app.use(express.static('public'));
 
 // 定义数据模型 将模型绑定到 req对象上
+// 连接数据库代码 
 app.use(orm.express("mysql://root@localhost/cso2017", {
   define: function (db, models, next) {
     var media= db.define("media", {
@@ -49,7 +51,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 用来指定路由处理的
 app.use('/', index);
 app.use('/users', users);
-// 七牛路由
+// 七牛
 app.use('/qiniu', qiniu);
 
 // catch 404 and forward to error handler

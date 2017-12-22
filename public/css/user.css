@@ -1,0 +1,37 @@
+table img {
+    width: 100%;
+    max-width: 100px;
+}
+
+.mask {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    opacity: .5;
+    background-color: #000;
+    z-index: 100000;
+}
+
+.mask::after {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 1px solid #fff;
+    background-color: blue;
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    margin-left: -50px;
+    margin-top: -50px;
+    transform-origin: 45px 45px;
+    animation: ani_loading .5s infinite linear;
+}
+
+@keyframes ani_loading {
+    0% {}
+    100% {
+        transform: rotate(360deg);
+    }
+}

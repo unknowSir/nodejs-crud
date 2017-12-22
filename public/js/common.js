@@ -1,9 +1,9 @@
 $(function () {
 
+  // 往art-template中注册方法
   template.helper("toJson", function (str) {
     return JSON.stringify(str);
   });
-
   // 将数字转为 对应的多媒体类型
   template.helper("toType", function (num) {
     var str = "默认";
